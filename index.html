@@ -2,7 +2,16 @@
 <html>
 <head>
     <title>Simple Pac-Man Game - Classic Map with Ghost Escape</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        body {
+            background-image: url('src/pacmanbackground.jpg');
+            background-repeat: no-repeat;
+            background-position: right center; /* Align background to the right */
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
         canvas {
             border: 1px solid black;
             display: block;
@@ -10,14 +19,80 @@
             background-color: #333;
         }
         button {
-            position: absolute;
             font-size: 16px;
             padding: 10px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+        }
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+        }
+        #startButton {
+            background-color: red;
+            color: white;
+            font-size: 24px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #startLogo {
+            width: 400px;
+            height: auto;
+        }
+        #testButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 5px;
+            padding: 3px;
+        }
+        #highScoreInputSection {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        #highScoreInputSection input {
+            font-size: 16px;
+            padding: 5px;
+            width: 60px;
+            text-align: center;
+            font-family: 'Press Start 2P', cursive;
+        }
+        #highScoreInputSection button {
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        #highScoreInputSection div {
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <script src="index.js"></script> <!-- Replace with your JS file name -->
+    <script src="index.js"></script>
 </body>
 </html>

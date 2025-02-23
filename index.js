@@ -7,10 +7,10 @@ const cols = canvas.width / tileSize;  // 20
 
 const maze = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
     [1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1],
     [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
-    [1, 2, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
@@ -20,11 +20,11 @@ const maze = [
     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1],
+    [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
@@ -38,7 +38,7 @@ let pacman = {
     direction: 0,
     pendingDirection: null,
     moving: false,
-    moveFrames: 10 // Start at 10 (base speed)
+    moveFrames: 10
 };
 
 let ghosts = [
@@ -68,32 +68,31 @@ let lives = 3;
 let gameOver = false;
 let powerMode = false;
 let powerTimer = 0;
-const powerDuration = 600; // ~10 seconds at 60 FPS
+const powerDuration = 600;
 let fruit = null;
 let fruitTimer = 0;
-const fruitSpawnInterval = 600; // ~10 seconds at 60 FPS
-const fruitDuration = 540; // ~9 seconds at 60 FPS
+const fruitSpawnInterval = 600;
+const fruitDuration = 540;
 let bonusText = null;
 let levelComplete = false;
 let levelCompleteTimer = 0;
-const blinkDuration = 120; // ~2 seconds at 60 FPS
+const blinkDuration = 120;
 let blinkState = true;
 let gameOverTimer = 0;
-const gameOverDelay = 120; // ~2 seconds at 60 FPS
+const gameOverDelay = 120;
 let highScoreScreen = false;
 let highScores = [];
 let deathFreeze = false;
 let deathFreezeTimer = 0;
-const deathFreezeDuration = 90; // 1.5 seconds at 60 FPS
-let speedMultiplier = 1.0; // Starts at 1.0, increases by 30% each level
+const deathFreezeDuration = 90;
+let speedMultiplier = 1.0;
 
-const overlapThreshold = 60; // ~1 second at 60 FPS
+const overlapThreshold = 60;
 
-// Sound Effects with updated paths
 const wackaSound = new Audio("src/wacka.mp3");
 wackaSound.loop = false;
 let lastWackaTime = 0;
-const wackaInterval = 200; // ~200ms between wacka sounds
+const wackaInterval = 200;
 
 const soundtrack = new Audio("src/soundtrack.mp3");
 soundtrack.loop = true;
@@ -102,7 +101,6 @@ soundtrack.volume = 0.5;
 const deathSound = new Audio("src/deathsound.mp3");
 deathSound.loop = false;
 
-// Preload audio
 function preloadAudio() {
     wackaSound.load();
     soundtrack.load();
@@ -124,7 +122,7 @@ function resetGame() {
     pacman.targetY = pacman.y;
     pacman.moving = false;
     pacman.pendingDirection = null;
-    pacman.moveFrames = 10; // Base speed for Pac-Man
+    pacman.moveFrames = 10;
 
     ghosts.forEach((g, index) => {
         g.gridX = 8 + index;
@@ -139,7 +137,7 @@ function resetGame() {
         g.scared = false;
         g.color = g.originalColor;
         g.overlapTimer = 0;
-        g.moveFrames = 12; // Base speed for ghosts
+        g.moveFrames = 12;
     });
 
     powerMode = false;
@@ -150,7 +148,16 @@ function resetGame() {
     levelCompleteTimer = 0;
     deathFreeze = false;
     deathFreezeTimer = 0;
-    speedMultiplier = 1.0; // Reset speed multiplier to base level
+    speedMultiplier = 1.0;
+
+    powerPellets = [];
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (maze[y][x] === 2) {
+                powerPellets.push({ x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 });
+            }
+        }
+    }
 
     soundtrack.play().catch(error => console.log("Soundtrack play failed:", error));
 }
@@ -190,10 +197,18 @@ function resetLevel() {
     deathFreeze = false;
     deathFreezeTimer = 0;
 
-    // Increase speed by 30% (reduce moveFrames)
-    speedMultiplier *= 1.3; // 30% faster each level
-    pacman.moveFrames = Math.max(1, Math.round(10 / speedMultiplier)); // Base 10, faster = fewer frames, min 1
-    ghosts.forEach(g => g.moveFrames = Math.max(1, Math.round(12 / speedMultiplier))); // Base 12, faster = fewer frames, min 1
+    powerPellets = [];
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (maze[y][x] === 2) {
+                powerPellets.push({ x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 });
+            }
+        }
+    }
+
+    speedMultiplier *= 1.3;
+    pacman.moveFrames = Math.max(1, Math.round(10 / speedMultiplier));
+    ghosts.forEach(g => g.moveFrames = Math.max(1, Math.round(12 / speedMultiplier)));
 }
 
 function spawnFruit() {
@@ -267,9 +282,24 @@ function drawPellets() {
 
 function drawScoreAndLives() {
     ctx.fillStyle = "white";
-    ctx.font = "16px Arial";
+    ctx.font = "12px 'Press Start 2P'";
     ctx.fillText(`Score: ${score}`, 10, 20);
-    ctx.fillText(`Lives: ${lives}`, canvas.width - 80, 20);
+
+    // Draw lives with a background for better visibility
+    const livesX = canvas.width - 80;
+    const livesY = 20;
+    ctx.font = "12px 'Press Start 2P'";
+    const livesText = "Lives: ";
+    const livesNumber = `${lives}`;
+    const textWidth = ctx.measureText(livesText + livesNumber).width;
+
+    // Draw a black background rectangle for contrast
+    ctx.fillStyle = "black";
+    ctx.fillRect(livesX - 5, livesY - 12, textWidth + 10, 18);
+
+    // Draw the text over the background
+    ctx.fillStyle = "white";
+    ctx.fillText(livesText + livesNumber, livesX, livesY);
 
     if (gameOver && !highScoreScreen) {
         ctx.fillStyle = "black";
@@ -280,7 +310,7 @@ function drawScoreAndLives() {
         ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
 
         ctx.fillStyle = "red";
-        ctx.font = "bold 30px Arial";
+        ctx.font = "20px 'Press Start 2P'";
         const textWidth = ctx.measureText("GAME OVER").width;
         const textX = boxX + (boxWidth - textWidth) / 2;
         const textY = boxY + boxHeight / 2 + 10;
@@ -289,7 +319,7 @@ function drawScoreAndLives() {
 
     if (bonusText) {
         ctx.fillStyle = "white";
-        ctx.font = "20px Arial";
+        ctx.font = "14px 'Press Start 2P'";
         ctx.fillText("+100", pacman.x, pacman.y - 10);
         bonusText.timer--;
         if (bonusText.timer <= 0) {
@@ -303,10 +333,10 @@ function drawHighScoreScreen() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = "white";
-    ctx.font = "24px Arial";
+    ctx.font = "16px 'Press Start 2P'";
     ctx.fillText("High Scores", canvas.width / 2 - 70, 50);
 
-    ctx.font = "16px Arial";
+    ctx.font = "10px 'Press Start 2P'";
     for (let i = 0; i < Math.min(highScores.length, 5); i++) {
         ctx.fillText(`${i + 1}. ${highScores[i].name}: ${highScores[i].score}`, canvas.width / 2 - 80, 100 + i * 30);
     }
@@ -341,6 +371,7 @@ document.addEventListener("keydown", (event) => {
             case "ArrowUp": newDirection = 3; break;
         }
         if (newDirection !== null) {
+            event.preventDefault();
             pacman.pendingDirection = newDirection;
             if (!pacman.moving) {
                 pacman.direction = newDirection;
@@ -354,10 +385,10 @@ function attemptMove(character, direction) {
     let nextGridX = character.gridX;
     let nextGridY = character.gridY;
 
-    if (direction === 0) nextGridX += 1; // Right
-    if (direction === 1) nextGridY += 1; // Down
-    if (direction === 2) nextGridX -= 1; // Left
-    if (direction === 3) nextGridY -= 1; // Up
+    if (direction === 0) nextGridX += 1;
+    if (direction === 1) nextGridY += 1;
+    if (direction === 2) nextGridX -= 1;
+    if (direction === 3) nextGridY -= 1;
 
     let isWormhole = (character.gridY === 9);
     if (isWormhole && (nextGridX < 0 || nextGridX >= cols)) {
@@ -635,7 +666,7 @@ function moveGhosts() {
                     lives--;
                     deathSound.currentTime = 0;
                     deathSound.play().catch(error => console.log("Death sound play failed:", error));
-                    soundtrack.pause(); // Pause soundtrack when Pac-Man loses a life
+                    soundtrack.pause();
                     deathFreeze = true;
                     deathFreezeTimer = deathFreezeDuration;
 
@@ -717,6 +748,19 @@ function update() {
                     soundtrack.currentTime = 0;
                 }
             }
+
+            if (!document.getElementById("testButton") && !deathFreeze) {
+                const testButton = document.createElement("button");
+                testButton.id = "testButton";
+                testButton.textContent = "Test Level Complete (1 Pellet)";
+                document.body.appendChild(testButton);
+                testButton.addEventListener("click", () => {
+                    if (!gameOver && !levelComplete && !deathFreeze) {
+                        const lastPellet = pellets[pellets.length - 1];
+                        pellets = [lastPellet];
+                    }
+                });
+            }
         } else if (levelCompleteTimer > 0) {
             levelCompleteTimer--;
             if (levelCompleteTimer % 15 === 0) {
@@ -726,69 +770,48 @@ function update() {
                 resetLevel();
                 soundtrack.play().catch(error => console.log("Soundtrack play failed:", error));
             }
+            const testButton = document.getElementById("testButton");
+            if (testButton) document.body.removeChild(testButton);
         }
     } else if (gameOver && !highScoreScreen) {
         gameOverTimer--;
         if (gameOverTimer <= 0) {
             highScoreScreen = true;
+            const testButton = document.getElementById("testButton");
+            if (testButton) document.body.removeChild(testButton);
             createHighScoreInput();
         }
+    } else {
+        const testButton = document.getElementById("testButton");
+        if (testButton) document.body.removeChild(testButton);
     }
     draw();
-
-    // Test Button (persistent during gameplay)
-    if (!document.getElementById("testButton")) {
-        const testButton = document.createElement("button");
-        testButton.id = "testButton";
-        testButton.textContent = "Test Level Complete (1 Pellet)";
-        testButton.style.position = "absolute";
-        testButton.style.top = "90px";
-        testButton.style.left = "150px";
-        document.body.appendChild(testButton);
-        testButton.addEventListener("click", () => {
-            if (!gameOver && !levelComplete && !deathFreeze) {
-                const lastPellet = pellets[pellets.length - 1];
-                pellets = [lastPellet];
-            }
-        });
-    }
-
     requestAnimationFrame(update);
 }
 
 function createHighScoreInput() {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.maxLength = 3;
-    input.style.position = "absolute";
-    input.style.top = "350px";
-    input.style.left = "150px";
-    input.style.width = "50px";
-    document.body.appendChild(input);
-    input.focus();
-
-    const submitButton = document.createElement("button");
-    submitButton.textContent = "Submit Score";
-    submitButton.style.position = "absolute";
-    submitButton.style.top = "330px";
-    submitButton.style.left = "150px";
-    document.body.appendChild(submitButton);
+    const highScoreSection = document.createElement("div");
+    highScoreSection.id = "highScoreInputSection";
 
     const enterNameText = document.createElement("div");
     enterNameText.textContent = "Enter your name:";
-    enterNameText.style.position = "absolute";
-    enterNameText.style.top = "310px";
-    enterNameText.style.left = "150px";
-    enterNameText.style.color = "white";
-    enterNameText.style.font = "16px Arial";
-    document.body.appendChild(enterNameText);
+    highScoreSection.appendChild(enterNameText);
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.maxLength = 3;
+    input.focus();
+    highScoreSection.appendChild(input);
+
+    const submitButton = document.createElement("button");
+    submitButton.textContent = "Submit Score";
+    highScoreSection.appendChild(submitButton);
 
     const playAgainButton = document.createElement("button");
     playAgainButton.textContent = "Play Again";
-    playAgainButton.style.position = "absolute";
-    playAgainButton.style.top = "380px";
-    playAgainButton.style.left = "150px";
-    document.body.appendChild(playAgainButton);
+    highScoreSection.appendChild(playAgainButton);
+
+    document.body.appendChild(highScoreSection);
 
     submitButton.addEventListener("click", () => {
         const name = input.value.trim() || "AAA";
@@ -800,26 +823,27 @@ function createHighScoreInput() {
     });
 
     playAgainButton.addEventListener("click", () => {
-        document.body.removeChild(input);
-        document.body.removeChild(submitButton);
-        document.body.removeChild(enterNameText);
-        document.body.removeChild(playAgainButton);
-        const testButton = document.getElementById("testButton");
-        if (testButton) document.body.removeChild(testButton);
+        document.body.removeChild(highScoreSection);
         resetGame();
     });
 }
 
-// Start Button
+const startScreen = document.createElement("div");
+startScreen.id = "startScreen";
+const startLogo = document.createElement("img");
+startLogo.id = "startLogo";
+startLogo.src = "src/pacmanlogo.png";
+startLogo.alt = "Pac-Man Logo";
 const startButton = document.createElement("button");
+startButton.id = "startButton";
 startButton.textContent = "Start Game";
-startButton.style.top = "50px";
-startButton.style.left = "150px";
-document.body.appendChild(startButton);
+startScreen.appendChild(startLogo);
+startScreen.appendChild(startButton);
+document.body.appendChild(startScreen);
 
 startButton.addEventListener("click", () => {
     preloadAudio();
     resetGame();
-    document.body.removeChild(startButton);
+    document.body.removeChild(startScreen);
     update();
 });
