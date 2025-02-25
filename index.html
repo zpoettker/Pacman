@@ -8,16 +8,21 @@
             background-image: url('src/pacmanbackground.png');
             background-repeat: no-repeat;
             background-size: cover;
-            background-position: center center; /* Align background to the right */
+            background-position: center center;
             margin: 0;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         canvas {
             border: 1px solid black;
-            display: block;
-            margin: 20px auto;
             background-color: #1a1a1a;
+            max-width: 90vw; /* Limit to 90% of viewport width */
+            max-height: 90vh; /* Limit to 90% of viewport height */
+            width: auto;
+            height: auto;
         }
         button {
             font-size: 16px;
@@ -94,7 +99,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <script src="index.js"></script>
 </body>
 </html>

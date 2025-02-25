@@ -1,9 +1,17 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const tileSize = 20;
-const rows = canvas.height / tileSize; // 20
-const cols = canvas.width / tileSize;  // 20
+// Dynamic canvas sizing
+function resizeCanvas() {
+    const size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9);
+    canvas.width = size;
+    canvas.height = size;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+const rows = 20;
+const cols = 20;
 
 const maze = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -31,10 +39,10 @@ const maze = [
 let pacman = {
     gridX: 9,
     gridY: 17,
-    x: 9 * tileSize,
-    y: 17 * tileSize,
-    targetX: 9 * tileSize,
-    targetY: 17 * tileSize,
+    x: 9 * (canvas.width / 20),
+    y: 17 * (canvas.width / 20),
+    targetX: 9 * (canvas.width / 20),
+    targetY: 17 * (canvas.width / 20),
     direction: 0,
     pendingDirection: null,
     moving: false,
@@ -42,26 +50,33 @@ let pacman = {
 };
 
 let ghosts = [
-    { gridX: 8, gridY: 9, x: 8 * tileSize, y: 9 * tileSize, targetX: 8 * tileSize, targetY: 9 * tileSize, color: "red", originalColor: "red", direction: 0, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 },
-    { gridX: 9, gridY: 9, x: 9 * tileSize, y: 9 * tileSize, targetX: 9 * tileSize, targetY: 9 * tileSize, color: "pink", originalColor: "pink", direction: 0, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 },
-    { gridX: 10, gridY: 9, x: 10 * tileSize, y: 9 * tileSize, targetX: 10 * tileSize, targetY: 9 * tileSize, color: "cyan", originalColor: "cyan", direction: 0, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 },
-    { gridX: 11, gridY: 9, x: 11 * tileSize, y: 9 * tileSize, targetX: 11 * tileSize, targetY: 9 * tileSize, color: "orange", originalColor: "orange", direction: 2, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 }
+    { gridX: 8, gridY: 9, x: 8 * (canvas.width / 20), y: 9 * (canvas.width / 20), targetX: 8 * (canvas.width / 20), targetY: 9 * (canvas.width / 20), color: "red", originalColor: "red", direction: 0, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 },
+    { gridX: 9, gridY: 9, x: 9 * (canvas.width / 20), y: 9 * (canvas.width / 20), targetX: 9 * (canvas.width / 20), targetY: 9 * (canvas.width / 20), color: "pink", originalColor: "pink", direction: 0, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 },
+    { gridX: 10, gridY: 9, x: 10 * (canvas.width / 20), y: 9 * (canvas.width / 20), targetX: 10 * (canvas.width / 20), targetY: 9 * (canvas.width / 20), color: "cyan", originalColor: "cyan", direction: 0, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 },
+    { gridX: 11, gridY: 9, x: 11 * (canvas.width / 20), y: 9 * (canvas.width / 20), targetX: 11 * (canvas.width / 20), targetY: 9 * (canvas.width / 20), color: "orange", originalColor: "orange", direction: 2, moving: false, moveFrames: 12, scared: false, state: "exiting", overlapTimer: 0 }
 ];
 
 let pellets = [];
 let powerPellets = [];
 let allPellets = [];
-for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-        if (maze[y][x] === 0) {
-            let pellet = { x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 };
-            pellets.push(pellet);
-            allPellets.push(pellet);
-        } else if (maze[y][x] === 2) {
-            powerPellets.push({ x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 });
+function updatePellets() {
+    const tileSize = canvas.width / 20;
+    pellets = [];
+    powerPellets = [];
+    allPellets = [];
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (maze[y][x] === 0) {
+                let pellet = { x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 };
+                pellets.push(pellet);
+                allPellets.push(pellet);
+            } else if (maze[y][x] === 2) {
+                powerPellets.push({ x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 });
+            }
         }
     }
 }
+updatePellets();
 
 let score = 0;
 let lives = 3;
@@ -69,6 +84,8 @@ let gameOver = false;
 let powerMode = false;
 let powerTimer = 0;
 const powerDuration = 600;
+const blinkDurationSeconds = 3;
+let blinkTimer = 0;
 let fruit = null;
 let fruitTimer = 0;
 const fruitSpawnInterval = 600;
@@ -76,7 +93,7 @@ const fruitDuration = 540;
 let bonusText = null;
 let levelComplete = false;
 let levelCompleteTimer = 0;
-const blinkDuration = 120;
+const levelBlinkDuration = 120;
 let blinkState = true;
 let gameOverTimer = 0;
 const gameOverDelay = 120;
@@ -108,12 +125,13 @@ function preloadAudio() {
 }
 
 function resetGame() {
+    const tileSize = canvas.width / 20;
     score = 0;
     lives = 3;
     gameOver = false;
     highScoreScreen = false;
     gameOverTimer = 0;
-    pellets = [...allPellets];
+    updatePellets();
     pacman.gridX = 9;
     pacman.gridY = 17;
     pacman.x = 9 * tileSize;
@@ -142,6 +160,7 @@ function resetGame() {
 
     powerMode = false;
     powerTimer = 0;
+    blinkTimer = 0;
     fruit = null;
     fruitTimer = 0;
     levelComplete = false;
@@ -150,20 +169,12 @@ function resetGame() {
     deathFreezeTimer = 0;
     speedMultiplier = 1.0;
 
-    powerPellets = [];
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-            if (maze[y][x] === 2) {
-                powerPellets.push({ x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 });
-            }
-        }
-    }
-
     soundtrack.play().catch(error => console.log("Soundtrack play failed:", error));
 }
 
 function resetLevel() {
-    pellets = [...allPellets];
+    const tileSize = canvas.width / 20;
+    updatePellets();
     pacman.gridX = 9;
     pacman.gridY = 17;
     pacman.x = 9 * tileSize;
@@ -190,6 +201,7 @@ function resetLevel() {
 
     powerMode = false;
     powerTimer = 0;
+    blinkTimer = 0;
     fruit = null;
     fruitTimer = 0;
     levelComplete = false;
@@ -197,21 +209,13 @@ function resetLevel() {
     deathFreeze = false;
     deathFreezeTimer = 0;
 
-    powerPellets = [];
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-            if (maze[y][x] === 2) {
-                powerPellets.push({ x: x * tileSize + tileSize / 2, y: y * tileSize + tileSize / 2 });
-            }
-        }
-    }
-
     speedMultiplier *= 1.3;
     pacman.moveFrames = Math.max(1, Math.round(10 / speedMultiplier));
     ghosts.forEach(g => g.moveFrames = Math.max(1, Math.round(12 / speedMultiplier)));
 }
 
 function spawnFruit() {
+    const tileSize = canvas.width / 20;
     if (!fruit) {
         const openSpots = [];
         for (let y = 0; y < rows; y++) {
@@ -227,6 +231,7 @@ function spawnFruit() {
 }
 
 function drawMaze() {
+    const tileSize = canvas.width / 20;
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             if (maze[y][x] === 1) {
@@ -238,6 +243,7 @@ function drawMaze() {
 }
 
 function drawPacman() {
+    const tileSize = canvas.width / 20;
     ctx.beginPath();
     ctx.arc(pacman.x + tileSize / 2, pacman.y + tileSize / 2, tileSize / 2 - 2, 0.2 * Math.PI, 1.8 * Math.PI);
     ctx.lineTo(pacman.x + tileSize / 2, pacman.y + tileSize / 2);
@@ -247,8 +253,13 @@ function drawPacman() {
 }
 
 function drawGhosts() {
+    const tileSize = canvas.width / 20;
     for (let ghost of ghosts) {
-        ctx.fillStyle = ghost.scared ? "blue" : ghost.color;
+        let ghostColor = ghost.scared ? "blue" : ghost.color;
+        if (ghost.scared && powerMode && powerTimer <= blinkDurationSeconds * 60) {
+            ghostColor = (blinkTimer % 30 < 15) ? "blue" : "white";
+        }
+        ctx.fillStyle = ghostColor;
         ctx.beginPath();
         ctx.arc(ghost.x + tileSize / 2, ghost.y + tileSize / 2, tileSize / 2 - 2, 0, Math.PI * 2);
         ctx.fillRect(ghost.x + 2, ghost.y + tileSize / 2 - 2, tileSize - 4, tileSize / 2);
@@ -257,6 +268,7 @@ function drawGhosts() {
 }
 
 function drawPellets() {
+    const tileSize = canvas.width / 20;
     ctx.fillStyle = "white";
     if (levelComplete && levelCompleteTimer > 0) {
         if (blinkState) {
@@ -285,21 +297,11 @@ function drawScoreAndLives() {
     ctx.font = "12px 'Press Start 2P'";
     ctx.fillText(`Score: ${score}`, 10, 20);
 
-    // Draw lives with a background for better visibility
-    const livesX = canvas.width - 80;
+    const livesX = canvas.width - 100;
     const livesY = 20;
-    ctx.font = "12px 'Press Start 2P'";
-    const livesText = "Lives: ";
-    const livesNumber = `${lives}`;
-    const textWidth = ctx.measureText(livesText + livesNumber).width;
-
-    // Draw a black background rectangle for contrast
-    ctx.fillStyle = "black";
-    ctx.fillRect(livesX - 5, livesY - 12, textWidth + 10, 18);
-
-    // Draw the text over the background
     ctx.fillStyle = "white";
-    ctx.fillText(livesText + livesNumber, livesX, livesY);
+    ctx.font = "12px 'Press Start 2P'";
+    ctx.fillText(`Lives: ${lives}`, livesX, livesY);
 
     if (gameOver && !highScoreScreen) {
         ctx.fillStyle = "black";
@@ -343,6 +345,7 @@ function drawHighScoreScreen() {
 }
 
 function draw() {
+    const tileSize = canvas.width / 20;
     if (highScoreScreen) {
         drawHighScoreScreen();
     } else {
@@ -382,6 +385,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 function attemptMove(character, direction) {
+    const tileSize = canvas.width / 20;
     let nextGridX = character.gridX;
     let nextGridY = character.gridY;
 
@@ -433,6 +437,7 @@ function animateCharacter(character) {
             character.moving = false;
 
             if (character.gridY === 9) {
+                const tileSize = canvas.width / 20;
                 if (character.gridX < 0) {
                     character.gridX = cols - 1;
                     character.x = (cols - 1) * tileSize;
@@ -459,6 +464,7 @@ function animateCharacter(character) {
 }
 
 function movePacman() {
+    const tileSize = canvas.width / 20;
     if (!deathFreeze) {
         if (!pacman.moving) {
             if (pacman.pendingDirection !== null && attemptMove(pacman, pacman.pendingDirection)) {
@@ -506,10 +512,13 @@ function movePacman() {
 }
 
 function moveGhosts() {
+    const tileSize = canvas.width / 20;
     if (powerMode) {
         powerTimer--;
+        blinkTimer++;
         if (powerTimer <= 0) {
             powerMode = false;
+            blinkTimer = 0;
             ghosts.forEach(ghost => {
                 ghost.scared = false;
                 ghost.color = ghost.originalColor;
@@ -689,6 +698,7 @@ function update() {
             if (deathFreeze) {
                 deathFreezeTimer--;
                 if (deathFreezeTimer <= 0) {
+                    const tileSize = canvas.width / 20;
                     deathFreeze = false;
                     pacman.gridX = 9;
                     pacman.gridY = 17;
@@ -730,6 +740,7 @@ function update() {
                 }
 
                 if (fruit) {
+                    const tileSize = canvas.width / 20;
                     let dx = fruit.x + tileSize / 2 - (pacman.x + tileSize / 2);
                     let dy = fruit.y + tileSize / 2 - (pacman.y + tileSize / 2);
                     let distance = Math.sqrt(dx * dx + dy * dy);
@@ -742,8 +753,8 @@ function update() {
 
                 if (pellets.length === 0) {
                     levelComplete = true;
-                    levelCompleteTimer = blinkDuration;
-                    pellets = [...allPellets];
+                    levelCompleteTimer = levelBlinkDuration;
+                    updatePellets();
                     soundtrack.pause();
                     soundtrack.currentTime = 0;
                 }
